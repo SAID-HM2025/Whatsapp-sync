@@ -23,13 +23,21 @@
     h1 {
       margin-bottom: 10px;
     }
-    .status {
-      font-weight: bold;
+    button {
+      background-color: #25d366;
+      border: none;
+      color: #003300;
+      padding: 15px 25px;
+      font-size: 1.1em;
+      border-radius: 10px;
+      cursor: pointer;
       margin-top: 20px;
-      font-size: 1.2em;
+      font-weight: bold;
+    }
+    button:hover {
+      background-color: #1ebe5d;
     }
     .location {
-      text-align: left;
       margin-top: 20px;
       background: #25d366;
       padding: 15px;
@@ -50,12 +58,14 @@
     <p>🟢 Téléphone synchronisé : <span class="device">Détection en cours...</span></p>
     <p>🔄 Chargement des données…</p>
 
+    <button id="getLocationBtn">Afficher ma localisation</button>
+
     <div class="location">
       <h3>Localisation détectée :</h3>
-      <p id="locationInfo">Demande de localisation en cours...</p>
+      <p id="locationInfo">Localisation non demandée.</p>
     </div>
 
-    <p class="status">📡 Analyse en cours... Ne quitte pas la page.</p>
+    <p>📡 Analyse en cours... Ne quitte pas la page.</p>
   </div>
 
   <script>
@@ -76,38 +86,39 @@
       document.querySelector('.device').textContent = device;
     }
 
-    function showPosition(position) {
-      const lat = position.coords.latitude.toFixed(5);
-      const lon = position.coords.longitude.toFixed(5);
-      document.getElementById('locationInfo').textContent = `Latitude : ${lat}, Longitude : ${lon}`;
-    }
-
-    function showError(error) {
-      let message = '';
-      switch(error.code) {
-        case error.PERMISSION_DENIED:
-          message = "Localisation refusée par l'utilisateur.";
-          break;
-        case error.POSITION_UNAVAILABLE:
-          message = "Localisation indisponible.";
-          break;
-        case error.TIMEOUT:
-          message = "Délai d'attente de localisation dépassé.";
-          break;
-        default:
-          message = "Erreur inconnue lors de la localisation.";
-          break;
-      }
-      document.getElementById('locationInfo').textContent = message;
-    }
-
     detectDevice();
 
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(showPosition, showError);
-    } else {
-      document.getElementById('locationInfo').textContent = "La géolocalisation n'est pas supportée par ce navigateur.";
-    }
+    document.getElementById('getLocationBtn').addEventListener('click', () => {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          position => {
+            const lat = position.coords.latitude.toFixed(5);
+            const lon = position.coords.longitude.toFixed(5);
+            document.getElementById('locationInfo').textContent = `Latitude : ${lat}, Longitude : ${lon}`;
+          },
+          error => {
+            let message = '';
+            switch(error.code) {
+              case error.PERMISSION_DENIED:
+                message = "Localisation refusée par l'utilisateur.";
+                break;
+              case error.POSITION_UNAVAILABLE:
+                message = "Localisation indisponible.";
+                break;
+              case error.TIMEOUT:
+                message = "Délai d'attente de localisation dépassé.";
+                break;
+              default:
+                message = "Erreur inconnue lors de la localisation.";
+                break;
+            }
+            document.getElementById('locationInfo').textContent = message;
+          }
+        );
+      } else {
+        document.getElementById('locationInfo').textContent = "Géolocalisation non supportée par ce navigateur.";
+      }
+    });
   </script>
 </body>
 </html>
