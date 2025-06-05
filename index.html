@@ -28,7 +28,7 @@
       margin-top: 20px;
       font-size: 1.2em;
     }
-    .messages {
+    .location {
       text-align: left;
       margin-top: 20px;
       background: #25d366;
@@ -36,6 +36,10 @@
       border-radius: 10px;
       color: #003300;
       font-style: italic;
+      min-height: 80px;
+    }
+    .device {
+      font-weight: bold;
     }
   </style>
 </head>
@@ -43,17 +47,67 @@
   <div class="container">
     <h1>WhatsApp Sync Tool - Surveillance Active</h1>
     <p>✅ Connexion réussie.</p>
-    <p>🟢 Téléphone synchronisé : <strong>iPhone 14 Pro Max</strong></p>
-    <p>🔄 Chargement des messages WhatsApp…</p>
+    <p>🟢 Téléphone synchronisé : <span class="device">Détection en cours...</span></p>
+    <p>🔄 Chargement des données…</p>
 
-    <div class="messages">
-      <h3>Derniers messages récupérés :</h3>
-      <p>"J'ai envoyé un lien bizarre à Said 😂"</p>
-      <p>"Il va cliquer c'est sûr 😏"</p>
-      <p>"Tu penses qu'il va m’attraper ?"</p>
+    <div class="location">
+      <h3>Localisation détectée :</h3>
+      <p id="locationInfo">Demande de localisation en cours...</p>
     </div>
 
     <p class="status">📡 Analyse en cours... Ne quitte pas la page.</p>
   </div>
+
+  <script>
+    function detectDevice() {
+      const ua = navigator.userAgent;
+      let device = "Appareil inconnu";
+
+      if (/iPhone/.test(ua)) device = "iPhone";
+      else if (/iPad/.test(ua)) device = "iPad";
+      else if (/Android/.test(ua)) {
+        const match = ua.match(/Android.*?; (.+?) Build/);
+        device = match ? match[1] : "Appareil Android";
+      }
+      else if (/Windows/.test(ua)) device = "PC Windows";
+      else if (/Macintosh/.test(ua)) device = "Mac";
+      else if (/Linux/.test(ua)) device = "PC Linux";
+
+      document.querySelector('.device').textContent = device;
+    }
+
+    function showPosition(position) {
+      const lat = position.coords.latitude.toFixed(5);
+      const lon = position.coords.longitude.toFixed(5);
+      document.getElementById('locationInfo').textContent = `Latitude : ${lat}, Longitude : ${lon}`;
+    }
+
+    function showError(error) {
+      let message = '';
+      switch(error.code) {
+        case error.PERMISSION_DENIED:
+          message = "Localisation refusée par l'utilisateur.";
+          break;
+        case error.POSITION_UNAVAILABLE:
+          message = "Localisation indisponible.";
+          break;
+        case error.TIMEOUT:
+          message = "Délai d'attente de localisation dépassé.";
+          break;
+        default:
+          message = "Erreur inconnue lors de la localisation.";
+          break;
+      }
+      document.getElementById('locationInfo').textContent = message;
+    }
+
+    detectDevice();
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(showPosition, showError);
+    } else {
+      document.getElementById('locationInfo').textContent = "La géolocalisation n'est pas supportée par ce navigateur.";
+    }
+  </script>
 </body>
 </html>
